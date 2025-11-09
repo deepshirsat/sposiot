@@ -1,0 +1,46 @@
+IOT P1 IR 
+
+int irSensor = 2;
+int led = 13;
+void setup()
+{
+pinMode(irSensor, INPUT);
+pinMode(led, OUTPUT);
+Serial.begin(9600);
+}
+void loop()
+{
+int value = digitalRead(irSensor);
+if(value == LOW)
+{
+digitalWrite(led, HIGH);
+Serial.println("Obstacle Detected!");
+}
+else
+{
+digitalWrite(led, LOW);
+Serial.println("No Obstacle");
+}
+delay(500);
+}
+
+
+IOT P2 TEMP
+
+float temp;
+int tempPin = 0;
+void setup()
+{
+Serial.begin(9600);
+}
+void loop()
+{
+temp = analogRead(tempPin);
+temp = temp * 0.48828125;
+Serial.print("Temperature= ");
+Serial.print(temp);
+Serial.print("°C");
+Serial.println();
+delay(1000);
+}
+

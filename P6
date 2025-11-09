@@ -1,0 +1,66 @@
+import java.util.*; 
+ 
+public class SJF { 
+    public static void main(String[] args) { 
+        Scanner sc = new Scanner(System.in); 
+ 
+        System.out.print("Enter the number of processes: "); 
+        int n = sc.nextInt(); 
+ 
+        int[] bt = new int[n];      // Burst Time 
+        int[] wt = new int[n];      // Waiting Time 
+        int[] tat = new int[n];     // Turnaround Time 
+        int[] pid = new int[n];     // Process IDs 
+ 
+        // Input burst times 
+        for (int i = 0; i < n; i++) { 
+            System.out.print("Enter Burst Time for Process P" + (i + 1) + ": "); 
+            bt[i] = sc.nextInt(); 
+            pid[i] = i + 1; 
+        } 
+ 
+        // Sort processes by burst time (SJF) 
+        for (int i = 0; i < n - 1; i++) { 
+            for (int j = i + 1; j < n; j++) { 
+                if (bt[j] < bt[i]) { 
+                    // swap burst time 
+                    int temp = bt[i]; 
+                    bt[i] = bt[j]; 
+                    bt[j] = temp; 
+ 
+                    // swap process ID also 
+                    int tempPid = pid[i]; 
+                    pid[i] = pid[j]; 
+                    pid[j] = tempPid; 
+                } 
+            } 
+        } 
+ 
+        // Calculate Waiting Time 
+        wt[0] = 0; 
+        for (int i = 1; i < n; i++) { 
+            wt[i] = wt[i - 1] + bt[i - 1]; 
+        } 
+ 
+        // Calculate Turnaround Time 
+        for (int i = 0; i < n; i++) { 
+            tat[i] = bt[i] + wt[i]; 
+        } 
+ 
+        // Calculate Averages 
+        float avgWt = 0, avgTat = 0; 
+        for (int i = 0; i < n; i++) { 
+avgWt += wt[i]; 
+avgTat += tat[i]; 
+} 
+avgWt /= n; 
+avgTat /= n; 
+// Display results 
+System.out.println("\nProcess\tBurst Time\tWaiting Time\tTurnaround Time"); 
+for (int i = 0; i < n; i++) { 
+System.out.println("P" + pid[i] + "\t" + bt[i] + "\t\t" + wt[i] + "\t\t" + tat[i]); 
+} 
+System.out.printf("\nAverage Waiting Time: %.2f", avgWt); 
+System.out.printf("\nAverage Turnaround Time: %.2f", avgTat); 
+} 
+} 

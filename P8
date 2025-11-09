@@ -1,0 +1,79 @@
+import java.util.*; 
+ 
+public class PriorityScheduling { 
+    public static void main(String[] args) { 
+        Scanner sc = new Scanner(System.in); 
+ 
+        System.out.print("Enter the number of processes: "); 
+        int n = sc.nextInt(); 
+ 
+        int[] bt = new int[n];   // Burst Time 
+        int[] pr = new int[n];   // Priority 
+        int[] pid = new int[n];  // Process ID 
+        int[] wt = new int[n];   // Waiting Time 
+        int[] tat = new int[n];  // Turnaround Time 
+ 
+        // Input burst time and priority 
+        for (int i = 0; i < n; i++) { 
+            System.out.println("\nProcess P" + (i + 1)); 
+ 
+            System.out.print("Enter Burst Time: "); 
+            bt[i] = sc.nextInt(); 
+ 
+            System.out.print("Enter Priority (lower = higher priority): "); 
+            pr[i] = sc.nextInt(); 
+ 
+            pid[i] = i + 1; 
+        } 
+ 
+        // Sort by priority (ascending) 
+        for (int i = 0; i < n - 1; i++) { 
+            for (int j = i + 1; j < n; j++) { 
+                if (pr[i] > pr[j]) { 
+                    // Swap priority 
+                    int temp = pr[i]; 
+                    pr[i] = pr[j]; 
+                    pr[j] = temp; 
+ 
+                    // Swap burst time 
+                    temp = bt[i]; 
+                    bt[i] = bt[j]; 
+                    bt[j] = temp; 
+ 
+                    // Swap process ID 
+                    temp = pid[i]; 
+                    pid[i] = pid[j]; 
+                    pid[j] = temp; 
+                } 
+            } 
+        } 
+ 
+        // Waiting time of first process 
+        wt[0] = 0; 
+// Calculate waiting time 
+for (int i = 1; i < n; i++) { 
+wt[i] = wt[i - 1] + bt[i - 1]; 
+} 
+// Calculate turnaround time 
+for (int i = 0; i < n; i++) { 
+tat[i] = bt[i] + wt[i]; 
+} 
+// Calculate average WT and TAT 
+float avgWT = 0, avgTAT = 0; 
+for (int i = 0; i < n; i++) { 
+avgWT += wt[i]; 
+avgTAT += tat[i]; 
+} 
+avgWT /= n; 
+avgTAT /= n; 
+// Display output 
+System.out.println("\nProcess\tPriority\tBurst Time\tWaiting Time\tTurnaround Time"); 
+for (int i = 0; i < n; i++) { 
+System.out.println("P" + pid[i] + "\t" + pr[i] + "\t\t" + bt[i] + "\t\t" + wt[i] + "\t\t" + 
+tat[i]); 
+} 
+System.out.printf("\nAverage Waiting Time: %.2f\n", avgWT); 
+System.out.printf("Average Turnaround Time: %.2f\n", avgTAT); 
+sc.close(); 
+} 
+} 

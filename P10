@@ -1,0 +1,109 @@
+import java.util.*; 
+ 
+public class MemoryPlacement { 
+     
+    // Next Fit Allocation 
+    public static void nextFit(int[] blocks, int[] processes) { 
+        int n = blocks.length; 
+        int m = processes.length; 
+ 
+        int[] allocation = new int[m]; 
+        int[] blockSizes = Arrays.copyOf(blocks, n); 
+         
+        Arrays.fill(allocation, -1); 
+ 
+        int j = 0; // pointer for next fit 
+         
+        for (int i = 0; i < m; i++) { 
+            int count = 0; 
+             
+            while (count < n) { 
+                if (blockSizes[j] >= processes[i]) { 
+                    allocation[i] = j; 
+                    blockSizes[j] -= processes[i]; 
+                    break; 
+                } 
+                j = (j + 1) % n; 
+                count++; 
+            } 
+        } 
+ 
+        System.out.println("\n--- Next Fit Allocation ---"); 
+        System.out.println("Process No.\tProcess Size\tBlock No."); 
+ 
+        for (int i = 0; i < m; i++) { 
+            if (allocation[i] != -1) { 
+                System.out.println((i + 1) + "\t\t" + processes[i] + "\t\t" + (allocation[i] + 1)); 
+            } else { 
+                System.out.println((i + 1) + "\t\t" + processes[i] + "\t\tNot Allocated"); 
+            } 
+        } 
+    } 
+ 
+    // Worst Fit Allocation 
+    public static void worstFit(int[] blocks, int[] processes) { 
+        int n = blocks.length; 
+        int m = processes.length; 
+ 
+        int[] allocation = new int[m]; 
+        int[] blockSizes = Arrays.copyOf(blocks, n); 
+ 
+        Arrays.fill(allocation, -1); 
+ 
+        for (int i = 0; i < m; i++) { 
+            int worstIndex = -1; 
+ 
+            for (int j = 0; j < n; j++) { 
+                if (blockSizes[j] >= processes[i]) { 
+                    if (worstIndex == -1 || blockSizes[j] > blockSizes[worstIndex]) { 
+                        worstIndex = j; 
+                    } 
+                } 
+            } 
+ 
+            if (worstIndex != -1) { 
+                allocation[i] = worstIndex; 
+                blockSizes[worstIndex] -= processes[i]; 
+            } 
+        } 
+ 
+        System.out.println("\n--- Worst Fit Allocation ---"); 
+        System.out.println("Process No.\tProcess Size\tBlock No."); 
+ 
+        for (int i = 0; i < m; i++) { 
+            if (allocation[i] != -1) { 
+                System.out.println((i + 1) + "\t\t" + processes[i] + "\t\t" + (allocation[i] + 1)); 
+            } else { 
+                System.out.println((i + 1) + "\t\t" + processes[i] + "\t\tNot Allocated"); 
+            } 
+        } 
+    } 
+ 
+    // MAIN PROGRAM 
+    public static void main(String[] args) { 
+        Scanner sc = new Scanner(System.in); 
+ 
+        System.out.print("Enter number of memory blocks: "); 
+        int n = sc.nextInt(); 
+        int[] blocks = new int[n]; 
+ 
+        for (int i = 0; i < n; i++) { 
+            System.out.print("Enter size of Block " + (i + 1) + ": "); 
+            blocks[i] = sc.nextInt(); 
+        } 
+ 
+        System.out.print("\nEnter number of processes: "); 
+        int m = sc.nextInt(); 
+        int[] processes = new int[m]; 
+ 
+        for (int i = 0; i < m; i++) { 
+            System.out.print("Enter size of Process " + (i + 1) + ": "); 
+            processes[i] = sc.nextInt(); 
+        } 
+ 
+        nextFit(blocks, processes); 
+        worstFit(blocks, processes); 
+ 
+sc.close(); 
+} 
+} 

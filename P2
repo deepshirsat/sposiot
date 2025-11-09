@@ -1,0 +1,153 @@
+import java.util.*; 
+ 
+public class MacroPass1 { 
+ 
+    static class MNTEntry { 
+        String name; 
+        int mdtIndex; 
+ 
+        MNTEntry(String name, int index) { 
+            this.name = name; 
+            this.mdtIndex = index; 
+        } 
+    } 
+ 
+    public static void main(String[] args) { 
+ 
+        // Input Program 
+        String[] program = { 
+            "MACRO", 
+            "INCR &A, &B", 
+            "ADD &A, &B", 
+            "MOVER AREG, &A", 
+            "MEND", 
+            "START 100", 
+            "INCR X, Y", 
+            "READ Z", 
+            "END" 
+        }; 
+ 
+        List<MNTEntry> MNT = new ArrayList<>(); 
+        List<String> MDT = new ArrayList<>(); 
+        Map<String, Map<String, String>> ALA = new HashMap<>(); 
+        List<String> pass1Output = new ArrayList<>(); 
+ 
+        boolean insideMacro = false; 
+ 
+        for (int i = 0; i < program.length; i++) { 
+            String line = program[i].trim(); 
+            String[] parts = line.split("[ ,]+"); 
+ 
+            // Start MACRO definition 
+            if (parts[0].equals("MACRO")) { 
+                insideMacro = true; 
+                continue; 
+            } 
+ 
+            // Process prototype: MACRO_NAME &A &B 
+            if (insideMacro && !parts[0].equals("MEND") && MNT.size() == 0 ||  
+               (insideMacro && MDT.size() > 0 && MDT.get(MDT.size() - 1).equals("MEND"))) { 
+                String macroName = parts[0]; 
+ 
+                MNT.add(new MNTEntry(macroName, MDT.size())); 
+ 
+                Map<String, String> argMap = new HashMap<>(); 
+                ALA.put(macroName, argMap); 
+ 
+                for (int a = 1; a < parts.length; a++) { 
+                    argMap.put(parts[a], "#" + (a - 1)); 
+                } 
+ 
+                MDT.add(line); 
+                continue; 
+            } 
+ 
+            // Inside macro body 
+            if (insideMacro) { 
+                if (parts[0].equals("MEND")) { 
+                    MDT.add("MEND"); 
+                    insideMacro = false; 
+                } else { 
+                    String macroName = MNT.get(MNT.size() - 1).name; 
+                    Map<String, String> argMap = ALA.get(macroName); 
+ 
+                    StringBuilder replaced = new StringBuilder(); 
+                    for (String p : parts) { 
+                        if (argMap.containsKey(p)) { 
+                            replaced.append(argMap.get(p)).append(" "); 
+                        } else { 
+                            replaced.append(p).append(" "); 
+                        } 
+                    } 
+                    MDT.add(replaced.toString().trim()); 
+                } 
+                continue; 
+            } 
+ 
+            // Check for macro call 
+            boolean isMacroCall = false; 
+            MNTEntry callEntry = null; 
+            for (MNTEntry e : MNT) { 
+                if (e.name.equals(parts[0])) { 
+                    isMacroCall = true; 
+                    callEntry = e; 
+                    break; 
+                } 
+            } 
+ 
+            if (isMacroCall) { 
+                String macroName = callEntry.name; 
+                Map<String, String> argMap = ALA.get(macroName); 
+ 
+                String[] actualArgs = Arrays.copyOfRange(parts, 1, parts.length); 
+                Map<String, String> reverseMap = new HashMap<>(); 
+                for (String key : argMap.keySet()) { 
+                    int idx = Integer.parseInt(argMap.get(key).substring(1)); 
+                    reverseMap.put(argMap.get(key), actualArgs[idx]); 
+                } 
+ 
+                // Expand macro 
+                int mdtPtr = callEntry.mdtIndex + 1; 
+                while (!MDT.get(mdtPtr).equals("MEND")) { 
+                    String[] bodyParts = MDT.get(mdtPtr).split(" "); 
+                    StringBuilder expanded = new StringBuilder(); 
+ 
+                    for (String bp : bodyParts) { 
+                        if (reverseMap.containsKey(bp)) { 
+                            expanded.append(reverseMap.get(bp)).append(" "); 
+                        } else { 
+                            expanded.append(bp).append(" "); 
+                        } 
+                    } 
+ 
+                    pass1Output.add(expanded.toString().trim()); 
+                    mdtPtr++; 
+                } 
+            } else { 
+                // Normal line 
+                pass1Output.add(line); 
+            } 
+        } 
+ 
+        // OUTPUT 
+        System.out.println("MNT (Macro Name Table):"); 
+        for (MNTEntry e : MNT) { 
+            System.out.println(e.name + "  MDT Index: " + e.mdtIndex); 
+        } 
+ 
+        System.out.println("\nALA (Argument List Array):"); 
+        for (String k : ALA.keySet()) { 
+            System.out.println(k + " : " + ALA.get(k)); 
+        } 
+ 
+        System.out.println("\nMDT (Macro Definition Table):"); 
+        for (int i = 0; i < MDT.size(); i++) { 
+            System.out.println(i + " : " + MDT.get(i)); 
+        } 
+ 
+        System.out.println("\nPASS I OUTPUT:"); 
+        for (String s : pass1Output) { 
+            System.out.println(s); 
+        } 
+    } 
+} 

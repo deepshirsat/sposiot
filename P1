@@ -1,0 +1,128 @@
+import java.util.*; 
+ 
+public class Assembler { 
+    public static void main(String[] args) { 
+ 
+        Map<String, String> MOT = new HashMap<>(); 
+        MOT.put("STOP", "(IS,00)"); 
+        MOT.put("ADD", "(IS,01)"); 
+        MOT.put("SUB", "(IS,02)"); 
+        MOT.put("MULT", "(IS,03)"); 
+        MOT.put("MOVER", "(IS,04)"); 
+        MOT.put("MOVEM", "(IS,05)"); 
+        MOT.put("COMP", "(IS,06)"); 
+        MOT.put("BC", "(IS,07)"); 
+        MOT.put("DIV", "(IS,08)"); 
+        MOT.put("READ", "(IS,09)"); 
+        MOT.put("PRINT", "(IS,10)"); 
+ 
+        MOT.put("START", "(AD,01)"); 
+        MOT.put("END", "(AD,02)"); 
+        MOT.put("EQU", "(AD,04)"); 
+ 
+        MOT.put("DS", "(DL,01)"); 
+        MOT.put("DC", "(DL,02)"); 
+ 
+        MOT.put("AREG", "(RG,01)"); 
+        MOT.put("BREG", "(RG,02)"); 
+        MOT.put("CREG", "(RG,03)"); 
+        MOT.put("DREG", "(RG,04)"); 
+ 
+        String[] program = { 
+            "START 100", 
+            "READ X", 
+            "ADD AREG, ='5'", 
+            "X DC 2", 
+            "Y DS 1", 
+            "Z EQU X", 
+            "END" 
+        }; 
+ 
+        int LC = 0; 
+        Map<String, Integer> symtab = new HashMap<>(); 
+        List<String> intermediate = new ArrayList<>(); 
+        List<String> littab = new ArrayList<>(); 
+ 
+        for (String line : program) { 
+ 
+            String clean = line.replace(",", ""); 
+            String[] parts = clean.trim().split("\\s+"); 
+ 
+            // skip blank or wrong lines 
+            if (parts.length == 0) continue; 
+ 
+            String op = parts[0]; 
+ 
+            // START 
+            if (op.equals("START")) { 
+                if (parts.length >= 2) { 
+                    LC = Integer.parseInt(parts[1]); 
+                    intermediate.add("(AD,01) (C," + LC + ")"); 
+                } 
+                continue; 
+            } 
+ 
+            // END 
+            if (op.equals("END")) { 
+                intermediate.add("(AD,02)"); 
+                continue; 
+            } 
+ 
+            // READ / PRINT 
+            if (op.equals("READ") || op.equals("PRINT")) { 
+                if (parts.length >= 2) { 
+                    String symbol = parts[1]; 
+                    symtab.putIfAbsent(symbol, null); 
+                    intermediate.add(MOT.get(op) + " (S," + symbol + ")"); 
+                    LC++; 
+                } 
+                continue; 
+            } 
+ 
+            // DC 
+            if (parts.length >= 3 && parts[1].equals("DC")) { 
+                symtab.put(parts[0], LC); 
+                intermediate.add("(DL,02) (C," + parts[2] + ")"); 
+                LC++; 
+                continue; 
+            } 
+ 
+            // DS 
+            if (parts.length >= 3 && parts[1].equals("DS")) { 
+                symtab.put(parts[0], LC); 
+                intermediate.add("(DL,01) (C," + parts[2] + ")"); 
+                LC += Integer.parseInt(parts[2]); 
+                continue; 
+            } 
+ 
+            // EQU 
+            if (parts.length >= 3 && parts[1].equals("EQU")) { 
+                symtab.put(parts[0], symtab.get(parts[2])); 
+                intermediate.add("(AD,04) (S," + parts[2] + ")"); 
+                continue; 
+} 
+// Imperative instructions (ADD / SUB / MOVER etc) 
+if (MOT.containsKey(op) && parts.length >= 3) { 
+String reg = MOT.get(parts[1]); 
+String operand = parts[2]; 
+if (operand.startsWith("='") && operand.endsWith("'")) { 
+String lit = operand.substring(2, operand.length() - 1); 
+littab.add(lit); 
+operand = "(L," + littab.size() + ")"; 
+} 
+intermediate.add(MOT.get(op) + " " + reg + " " + operand); 
+LC++; 
+} 
+} 
+// Print Symbol Table 
+System.out.println("SYMBOL TABLE:"); 
+for (String key : symtab.keySet()) { 
+System.out.println(key + " -> " + symtab.get(key)); 
+} 
+// Print Intermediate Code 
+System.out.println("\nINTERMEDIATE CODE:"); 
+for (String ic : intermediate) { 
+System.out.println(ic); 
+} 
+} 
+} 

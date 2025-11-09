@@ -1,0 +1,70 @@
+import java.util.*; 
+ 
+public class RoundRobin { 
+    public static void main(String[] args) { 
+        Scanner sc = new Scanner(System.in); 
+ 
+        System.out.print("Enter the number of processes: "); 
+        int n = sc.nextInt(); 
+ 
+        int[] bt = new int[n];       // Burst Time 
+        int[] wt = new int[n];       // Waiting Time 
+        int[] tat = new int[n];      // Turnaround Time 
+        int[] rem_bt = new int[n];   // Remaining Burst Time 
+ 
+        // Input burst times 
+        for (int i = 0; i < n; i++) { 
+            System.out.print("Enter Burst Time for Process P" + (i + 1) + ": "); 
+            bt[i] = sc.nextInt(); 
+            rem_bt[i] = bt[i]; 
+        } 
+ 
+        System.out.print("Enter Time Quantum: "); 
+        int quantum = sc.nextInt(); 
+ 
+        int time = 0;  // Current time 
+ 
+        // Process until all processes are completed 
+        while (true) { 
+            boolean done = true; 
+ 
+            for (int i = 0; i < n; i++) { 
+                if (rem_bt[i] > 0) { 
+                    done = false; 
+ 
+                    if (rem_bt[i] > quantum) { 
+                        time += quantum; 
+                        rem_bt[i] -= quantum; 
+                    } else { 
+                        time += rem_bt[i]; 
+                        wt[i] = time - bt[i]; 
+                        rem_bt[i] = 0; 
+                    } 
+                } 
+            } 
+ 
+            if (done) 
+                break; 
+        } 
+ 
+        // Turnaround time = burst time + waiting time 
+        for (int i = 0; i < n; i++) { 
+            tat[i] = bt[i] + wt[i]; 
+} 
+// Averages 
+float avgWt = 0, avgTat = 0; 
+for (int i = 0; i < n; i++) { 
+avgWt += wt[i]; 
+avgTat += tat[i]; 
+} 
+avgWt /= n; 
+avgTat /= n; 
+// Display results 
+System.out.println("\nProcess\tBurst Time\tWaiting Time\tTurnaround Time"); 
+for (int i = 0; i < n; i++) { 
+System.out.println("P" + (i + 1) + "\t" + bt[i] + "\t\t" + wt[i] + "\t\t" + tat[i]); 
+} 
+System.out.printf("\nAverage Waiting Time: %.2f", avgWt); 
+System.out.printf("\nAverage Turnaround Time: %.2f", avgTat); 
+} 
+} 
